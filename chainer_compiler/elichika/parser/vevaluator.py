@@ -449,7 +449,8 @@ def veval_ast_aug_assign(astc : 'AstContext', local_field : 'values.Field', grap
     assert(isinstance(astc.nast, gast.gast.AugAssign))
     lineprop = utils.LineProperty(astc.lineno, astc.filename)
 
-    target = veval_ast(astc.c(astc.nast.target), local_field, graph, context)
+    with context.eval_as_written_target():
+        target = veval_ast(astc.c(astc.nast.target), local_field, graph, context)
     value = veval_ast(astc.c(astc.nast.value), local_field, graph, context)
 
     target_value = utils.try_get_value(target, 'aug_assign', lineprop)
@@ -475,7 +476,7 @@ def veval_ast_aug_assign(astc : 'AstContext', local_field : 'values.Field', grap
 
     new_value = veval_aug_assign.veval(binop, target_value, value_value, lineprop)
     node_aug_assign.set_outputs([new_value])
-    utils.try_get_obj(target, 'aug_assign', lineprop).revise(new_value)
+    target.revise(values.Object(new_value))
 
 def veval_ast_expr(astc : 'AstContext', local_field : 'values.Field', graph : 'Graph', context : 'functions.VEvalContext' = None):
     '''
